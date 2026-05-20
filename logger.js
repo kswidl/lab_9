@@ -1,14 +1,33 @@
+function getTimestamp() {
+    return new Date().toISOString();
+}
+
 export function log({ level = "INFO" } = {}) {
     return function (fn) {
         return function (...args) {
-            console.log(`[${level}] Calling ${fn.name}`);
-            console.log("Arguments:", args);
+           const timestamp = getTimestamp();
 
-            const result = fn(...args);
+            try {
+                if (level !== "ERROR") {
+                    console.log(`[${timestamp}] [${level}] Calling ${fn.name}`);
+                    console.log("Arguments:", args);
+                }
 
-            console.log("Result:", result);
+                const result = fn(...args);
 
-            return result;
+                if (level !== "ERROR") {
+                    console.log(`[${timestamp}] [${level}] Result:`, result);
+                }
+
+                return result;
+            } catch (error) {
+                console.error(
+                    `[${timestamp}] [ERROR] ${fn.name}:`,
+                    error.message
+                );
+
+                throw error;
+            }
         };
     };
 }

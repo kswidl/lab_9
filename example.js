@@ -1,7 +1,15 @@
 import { log } from "./logger.js";
 
-const sum = log({ level: "INFO" })(function sum(a, b) {
-    return a + b;
+const divide = log({ level: "INFO" })(function divide(a, b) {
+    return a / b;
 });
 
-sum(5, 3);
+const crash = log({ level: "ERROR" })(function crash() {
+    throw new Error("Something went wrong");
+});
+
+console.log(divide(10, 2));
+
+try {
+    crash();
+} catch (e) {}
