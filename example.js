@@ -1,13 +1,24 @@
 import { log } from "./logger.js";
 
-const sum = log({ level: "INFO" })(function sum(a, b) {
-    return a + b;
+const multiply = log({
+    level: "INFO",
+    target: "console"
+})(function multiply(a, b) {
+    return a * b;
 });
 
-const fetchData = log({ level: "INFO" })(async function fetchData() {
-    return "Data loaded";
+const asyncTask = log({
+    level: "INFO",
+    target: "file"
+})(async function asyncTask() {
+
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            resolve("Async completed");
+        }, 1000);
+    });
 });
 
-console.log(sum(2, 4));
+console.log(multiply(3, 5));
 
-fetchData().then(console.log);
+asyncTask();
