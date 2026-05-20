@@ -8,17 +8,26 @@ function writeToFile(message) {
     fs.appendFileSync("./logs/app.log", message + "\n");
 }
 
-function formatMessage(level, message) {
-    return `[${getTimestamp()}] [${level}] ${message}`;
+function defaultFormatter(data) {
+    return `[${data.timestamp}] [${data.level}] ${data.message}`;
 }
 
-function output(target, message) {
+function jsonFormatter(data) {
+    return JSON.stringify(data);
+}
+
+function send(target, message) {
+
     if (target === "console") {
         console.log(message);
     }
 
     if (target === "file") {
         writeToFile(message);
+    }
+
+    if (target === "external") {
+        console.log("External service:", message);
     }
 }
 
@@ -28,10 +37,19 @@ function isAsyncFunction(fn) {
 
 export function log({
     level = "INFO",
-    target = "console"
+    target = "console",
+    formatter = defaultFormatter
 } = {}) {
 
     return function (fn) {
+
+        const buildLog = (message, currentLevel) => {
+            return formatter({
+                timestamp: getTimestamp(),
+                level: currentLevel,
+                message
+            });
+        };
 
         if (isAsyncFunction(fn)) {
             return async function (...args) {
@@ -39,14 +57,12 @@ export function log({
 
                 try {
                     if (level !== "ERROR") {
-                        output(
+                        send(
                             target,
-                            formatMessage(level, `${fn.name} called`)
-                        );
-
-                        output(
-                            target,
-                            formatMessage(level, `Arguments: ${JSON.stringify(args)}`)
+                            buildLog(
+                                `${fn.name} called with ${JSON.stringify(args)}`,
+                                level
+                            )
                         );
                     }
 
@@ -55,19 +71,20 @@ export function log({
                     const executionTime = Date.now() - start;
 
                     if (level !== "ERROR") {
-                        output(
+
+                        send(
                             target,
-                            formatMessage(
-                                level,
-                                `Result: ${JSON.stringify(result)}`
+                            buildLog(
+                                `Result: ${JSON.stringify(result)}`,
+                                level
                             )
                         );
 
-                        output(
+                        send(
                             target,
-                            formatMessage(
-                                level,
-                                `Execution time: ${executionTime}ms`
+                            buildLog(
+                                `Execution time: ${executionTime}ms`,
+                                level
                             )
                         );
                     }
@@ -75,11 +92,11 @@ export function log({
                     return result;
 
                 } catch (error) {
-                    output(
+                     send(
                         target,
-                        formatMessage(
-                            "ERROR",
-                            `${fn.name}: ${error.message}`
+                        buildLog(
+                            error.message,
+                            "ERROR"
                         )
                     );
 
@@ -93,14 +110,13 @@ export function log({
 
             try {
                 if (level !== "ERROR") {
-                    output(
-                        target,
-                        formatMessage(level, `${fn.name} called`)
-                    );
 
-                    output(
+                    send(
                         target,
-                        formatMessage(level, `Arguments: ${JSON.stringify(args)}`)
+                        buildLog(
+                            `${fn.name} called with ${JSON.stringify(args)}`,
+                            level
+                        )
                     );
                 }
 
@@ -109,19 +125,20 @@ export function log({
                 const executionTime = Date.now() - start;
 
                 if (level !== "ERROR") {
-                    output(
+
+                    send(
                         target,
-                        formatMessage(
-                            level,
-                            `Result: ${JSON.stringify(result)}`
+                        buildLog(
+                            `Result: ${JSON.stringify(result)}`,
+                            level
                         )
                     );
 
-                    output(
+                    send(
                         target,
-                        formatMessage(
-                            level,
-                            `Execution time: ${executionTime}ms`
+                        buildLog(
+                            `Execution time: ${executionTime}ms`,
+                            level
                         )
                     );
                 }
@@ -129,16 +146,18 @@ export function log({
                 return result;
 
             } catch (error) {
-                output(
+                 send(
                     target,
-                    formatMessage(
-                        "ERROR",
-                        `${fn.name}: ${error.message}`
+                    buildLog(
+                        error.message,
+                        "ERROR"
                     )
                 );
-
+                
                 throw error;
             }
         };
     };
 }
+
+export { jsonFormatter };

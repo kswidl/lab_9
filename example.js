@@ -1,24 +1,31 @@
-import { log } from "./logger.js";
+import { log, jsonFormatter } from "./logger.js";
 
-const multiply = log({
+const add = log({
     level: "INFO",
     target: "console"
-})(function multiply(a, b) {
-    return a * b;
+})(function add(a, b) {
+    return a + b;
 });
 
-const asyncTask = log({
+const asyncData = log({
     level: "INFO",
-    target: "file"
-})(async function asyncTask() {
-
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            resolve("Async completed");
-        }, 1000);
-    });
+    target: "file",
+    formatter: jsonFormatter
+})(async function asyncData() {
+    return "JSON log example";
 });
 
-console.log(multiply(3, 5));
+const errorFunction = log({
+    level: "ERROR",
+    target: "console"
+})(function errorFunction() {
+    throw new Error("Test error");
+});
 
-asyncTask();
+console.log(add(4, 6));
+
+asyncData();
+
+try {
+    errorFunction();
+} catch (e) {}
