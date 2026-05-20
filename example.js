@@ -1,15 +1,13 @@
 import { log } from "./logger.js";
 
-const divide = log({ level: "INFO" })(function divide(a, b) {
-    return a / b;
+const sum = log({ level: "INFO" })(function sum(a, b) {
+    return a + b;
 });
 
-const crash = log({ level: "ERROR" })(function crash() {
-    throw new Error("Something went wrong");
+const fetchData = log({ level: "INFO" })(async function fetchData() {
+    return "Data loaded";
 });
 
-console.log(divide(10, 2));
+console.log(sum(2, 4));
 
-try {
-    crash();
-} catch (e) {}
+fetchData().then(console.log);
