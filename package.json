@@ -1,0 +1,9 @@
+{
+  "name": "task-9-logging-decorator",
+  "version": "1.0.0",
+  "main": "example.js",
+  "type": "module",
+  "scripts": {
+    "start": "node example.js"
+  }
+}
